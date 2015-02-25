@@ -1,0 +1,24 @@
+@(newGameLink: String, openGames: Iterable[OpenGame])
+
+<html>
+    <body>
+        <b><a href="@newGameLink">Start New Game</a></b>
+        <h2>Games Waiting For Players</h2>
+        <table>
+            <tr>
+                <th>Owner</th>
+                <th>Required</th>
+                <th>Joined</th>
+                <th>Players</th>
+            </tr>
+            @for(game <- openGames) {
+            <tr>
+                <td><a href="@game.joinGameLinkGen(game.owner)">@game.owner</a></td>
+                <td>@game.numPlayers</td>
+                <td>@game.joinedPlayers.size</td>
+                <td>@game.joinedPlayers.map(_.name).mkString</td>
+            </tr>
+            }
+        </table>
+    </body>
+</html>

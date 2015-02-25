@@ -1,0 +1,10 @@
+@(newGameForm: Form[NewGame])
+
+<html>
+    <body>
+        <h1>Start New Game</h1>
+        @helper.form(action = routes.Dominion.createGame()) {
+            @helper.inputText(newGameForm("numPlayers"))
+        }
+    </body>
+</html>

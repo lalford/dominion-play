@@ -1,0 +1,9 @@
+@(cards: List[Card])
+
+<p class="card-display">
+    @cards.head.name
+    <br/>
+    Cost @cards.head.cost
+    <br/>
+    Qty  @cards.size
+</p>

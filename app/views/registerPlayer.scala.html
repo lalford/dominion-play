@@ -1,0 +1,10 @@
+@(registerPlayerForm: Form[RegisterPlayer])
+
+<html>
+    <body>
+        <h1>Enter Dominion Player Name</h1>
+        @helper.form(action = routes.Dominion.registerPlayer()) {
+            @helper.inputText(registerPlayerForm("name"))
+        }
+    </body>
+</html>

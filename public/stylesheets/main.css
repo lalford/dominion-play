@@ -1,0 +1,27 @@
+.game-board {
+}
+
+.victory-board {
+    display: flex;
+}
+
+.treasure-board {
+    display: flex;
+}
+
+.kingdom-board {
+}
+
+.kingdom-board-row {
+    display: flex;
+}
+
+.card-display {
+    padding: 5px;
+    border: solid;
+    margin: 10px;
+}
+
+.game-list-item {
+    display: flex;
+}

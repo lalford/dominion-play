@@ -1,0 +1,10 @@
+GET         /                               controllers.Dominion.menu
+POST        /dominion/registerPlayer        controllers.Dominion.registerPlayer
+GET         /dominion/new                   controllers.Dominion.newGame
+POST        /dominion/new                   controllers.Dominion.createGame
+GET         /dominion/join/:owner           controllers.Dominion.joinGame(owner: String)
+GET         /dominion/socket                controllers.GameSocket.socket
+
+
+# Map static resources from the /public folder to the /assets URL path
+GET         /assets/*file                   controllers.Assets.at(path="/public", file)

@@ -1,0 +1,18 @@
+@(game: Game, activePlayer: String)
+
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Dominion Play</title>
+        <link rel="stylesheet" href="@routes.Assets.at("stylesheets/main.css")">
+        <script src="@routes.Assets.at("javascripts/game.js")"></script>
+        <script type="text/javascript">connectToGame("@game.owner", "@activePlayer", "@routes.GameSocket.socket()");</script>
+    </head>
+    <body>
+        <div class="game-board">
+            @victoryBoard(game.gameBoard.victoryBoard)
+            @treasureBoard(game.gameBoard.treasureBoard)
+            @kingdomBoard(game.gameBoard.kingdomBoard)
+        </div>
+    </body>
+</html>
