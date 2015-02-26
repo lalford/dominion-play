@@ -1,6 +1,6 @@
 function handleGameStateChange(evt) {
     var changedGame = evt.data;
-    console.log("game state changes need client implementation: " + changedGame);
+    console.log("game state changes need client implementation: \n" + changedGame);
 }
 
 function connectToGame(owner, player, path) {
@@ -12,7 +12,12 @@ function connectToGame(owner, player, path) {
     var gameSocket = new WebSocket("ws://" + host + path);
 
     gameSocket.onopen = function() {
-        gameSocket.send(JSON.stringify({ "owner": gameOwner, "player": activePlayer}));
+        var connectedEvent = {
+            "eventType": "Connected",
+            "gameOwner": gameOwner,
+            "player": activePlayer
+        }
+        gameSocket.send(JSON.stringify(connectedEvent));
         console.log(activePlayer + " joined " + gameOwner);
     };
 

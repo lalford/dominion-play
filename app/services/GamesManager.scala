@@ -1,7 +1,7 @@
 package services
 
 import akka.actor.ActorRef
-import models.{Player, PlayerHandle, WaitingForPlayers, Game}
+import models._
 
 import scala.collection.concurrent.TrieMap
 
@@ -18,19 +18,27 @@ object GamesManager {
       case None => throw new IllegalStateException(s"owner: $owner game not found")
       case Some(game) =>
         game.synchronized {
-          val playerHandle = PlayerHandle(
-            gameSocket = playerSocket,
-            seat = game.playerHandles.size,
-            player = PlayersManager.get(player).getOrElse(throw new IllegalStateException(s"player: $player not found"))
-          )
-          game.playerHandles.put(player, playerHandle)
+          // TODO - handle rejoining after disconnect
+          if (game.playerHandles.size < game.numPlayers) {
+            // TODO - players need a starting deck
+            val playerHandle = PlayerHandle(
+              gameSocket = playerSocket,
+              seat = game.playerHandles.size,
+              player = PlayersManager.get(player).getOrElse(throw new IllegalStateException(s"player: $player not found"))
+            )
+            game.playerHandles.put(player, playerHandle)
+
+            if (game.playerHandles.size == game.numPlayers)
+              games.replace(owner, game.copy(state = Playing))
+          } else
+            throw new IllegalStateException(s"sorry, someone clicked faster than $player")
         }
     }
   }
 
-  def gameBroadcast(owner: String, msg: String): Unit = {
+  def gameBroadcast(owner: String): Unit = {
     games.get(owner) match {
-      case Some(game) => game.playerHandles.foreach { case (_, handle) => handle.gameSocket ! msg }
+      case Some(game) => game.playerHandles.foreach { case (_, handle) => handle.gameSocket ! game }
       case _ =>
     }
   }

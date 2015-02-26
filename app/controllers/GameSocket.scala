@@ -1,15 +1,16 @@
 package controllers
 
-import akka.actor.{Actor, Props, ActorRef}
-import models.{GameEventSerializers, Connected, GameEvent}
+import akka.actor.{PoisonPill, Actor, Props, ActorRef}
+import models.{Connected, Game, GameSerializers, GameEvent}
+import play.api.Logger
 import play.api.mvc.{WebSocket, Controller}
 import play.api.Play.current
 import services.GamesManager
 
 object GameSocket extends Controller {
-  import GameEventSerializers._
+  import GameSerializers._
 
-  def socket = WebSocket.acceptWithActor[Connected, String] { request => out =>
+  def socket = WebSocket.acceptWithActor[GameEvent, Game] { request => out =>
     GameSocketActor.props(out)
   }
 }
@@ -20,10 +21,18 @@ object GameSocketActor {
 
 class GameSocketActor(out: ActorRef) extends Actor {
   def receive = {
-    case connected: Connected =>
-      GamesManager.addPlayerHandle(connected.owner, connected.player, out)
-      out ! s"Got your request to connect ${connected.player} to ${connected.owner}, got to figure out data for rebuilding game state UI"
-      GamesManager.gameBroadcast(connected.owner, s"${connected.player} has joined")
-      // TODO - check if we've reached critical mass, update game state
+    case gameEvent: GameEvent =>
+      val gameOwner = gameEvent.gameOwner
+      val player = gameEvent.player
+
+      gameEvent.eventType match {
+        case Connected =>
+          GamesManager.addPlayerHandle(gameOwner, player, out)
+        case _ =>
+          Logger.error(s"closing socket due to unhandled event type: ${gameEvent.eventType}")
+          self ! PoisonPill
+      }
+
+      GamesManager.gameBroadcast(gameOwner)
   }
 }
