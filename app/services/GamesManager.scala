@@ -1,7 +1,8 @@
 package services
 
 import akka.actor.ActorRef
-import models._
+import models.games.{Playing, PlayerHandle, WaitingForPlayers, Game}
+import models.players.Player
 
 import scala.collection.concurrent.TrieMap
 

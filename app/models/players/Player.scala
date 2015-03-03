@@ -1,6 +1,8 @@
-package models
+package models.players
 
-import collection.mutable.MutableList
+import models.cards.Card
+
+import scala.collection.mutable.MutableList
 
 case class Player(
   name: String,

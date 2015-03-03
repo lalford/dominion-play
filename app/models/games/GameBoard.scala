@@ -1,4 +1,7 @@
-package models
+package models.games
+
+import models.cards._
+import models.players.Player
 
 case class GameBoard(
   players: List[Player],

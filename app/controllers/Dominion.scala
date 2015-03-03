@@ -1,6 +1,7 @@
 package controllers
 
-import models._
+import models.games.{PlayerHandle, WaitingForPlayers, Game, GameBoard}
+import models.players.Player
 import play.api.data._
 import play.api.data.Forms._
 import play.api.mvc.Action

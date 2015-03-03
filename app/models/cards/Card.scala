@@ -1,12 +1,4 @@
-package models
-
-class Event()
-
-sealed trait CardTrait
-case class Victory(points: Int) extends CardTrait
-case class Treasure(value: Int) extends CardTrait
-case class Action(events: List[Event]) extends CardTrait
-case class Duration(events: List[Event]) extends CardTrait
+package models.cards
 
 sealed trait Card {
   def name: String
@@ -14,7 +6,6 @@ sealed trait Card {
   def traits: Set[CardTrait]
 }
 
-// card list
 case class Curse() extends Card {
   def name: String = "Curse"
   def cost: Int = 0

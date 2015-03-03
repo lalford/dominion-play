@@ -1,16 +1,21 @@
 package controllers
 
 import akka.actor.{PoisonPill, Actor, Props, ActorRef}
-import models.{Connected, Game, GameSerializers, GameEvent}
+import models.games.Game
+import models.games.events.{ConnectedHandler, GameEventHandler, Connected, GameEvent}
 import play.api.Logger
+import play.api.data.validation.ValidationError
+import play.api.libs.json.{JsPath, OWrites, OFormat, JsValue}
 import play.api.mvc.{WebSocket, Controller}
 import play.api.Play.current
-import services.GamesManager
+import services.{GameEventHandlers, GamesManager}
 
 object GameSocket extends Controller {
-  import GameSerializers._
+  import services.GameFormatters._
 
-  def socket = WebSocket.acceptWithActor[GameEvent, Game] { request => out =>
+  GameEventHandlers.register(ConnectedHandler)
+
+  def socket = WebSocket.acceptWithActor[JsValue, Game] { request => out =>
     GameSocketActor.props(out)
   }
 }
@@ -21,18 +26,39 @@ object GameSocketActor {
 
 class GameSocketActor(out: ActorRef) extends Actor {
   def receive = {
-    case gameEvent: GameEvent =>
-      val gameOwner = gameEvent.gameOwner
-      val player = gameEvent.player
+    case json: JsValue =>
+      val eventType = (json \ "eventType").as[String]
+      val eventHandler = GameEventHandlers.handlerFor(eventType)
+      gameEventFormat(eventHandler)
+        .reads(json)
+        .fold(handleBadEvent, handleGameEvent(eventType, _))
+    case _ =>
+  }
 
-      gameEvent.eventType match {
-        case Connected =>
-          GamesManager.addPlayerHandle(gameOwner, player, out)
-        case _ =>
-          Logger.error(s"closing socket due to unhandled event type: ${gameEvent.eventType}")
-          self ! PoisonPill
-      }
+  private def gameEventFormat[A <: GameEvent](handler: GameEventHandler[A]) = {
+    OFormat[A](
+      handler.reads,
+      OWrites[A](_ => throw new UnsupportedOperationException("game events are only read"))
+    )
+  }
 
-      GamesManager.gameBroadcast(gameOwner)
+  private def handleBadEvent(errors: Seq[(JsPath, Seq[ValidationError])]): Unit = {
+    val formattedErrors = errors.map { case (path, pathErrors) =>
+      val formattedPathErrors = pathErrors.map(e => s"  ${e.message}").mkString("\n")
+      s"${path.toString()}\n$formattedPathErrors"
+    }
+    Logger.error(s"bad game event: $formattedErrors")
+  }
+
+  private def handleGameEvent(eventType: String, event: GameEvent): Unit = {
+    event match {
+      case c: Connected =>
+        GamesManager.addPlayerHandle(c.gameOwner, c.player, out)
+      case _ =>
+        Logger.error(s"closing socket due to unhandled event type: $eventType")
+        self ! PoisonPill
+    }
+
+    GamesManager.gameBroadcast(event.gameOwner)
   }
 }
