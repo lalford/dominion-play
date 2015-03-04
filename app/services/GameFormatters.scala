@@ -13,7 +13,7 @@ object GameFormatters {
   implicit object CardFormat extends Format[Card] {
     override def reads(json: JsValue): JsResult[Card] = JsError("reads for card object not implemented")
 
-    override def writes(o: Card): JsValue = JsObject(Seq("name" -> JsString(o.name)))
+    override def writes(o: Card): JsValue = JsString(o.name)
   }
 
   implicit object PlayerFormat extends Format[Player] {

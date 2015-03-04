@@ -1,4 +1,4 @@
-function handleGameStateChange(evt) {
+function handleGameChange(evt) {
     var changedGame = evt.data;
     console.log("game state changes need client implementation: \n" + changedGame);
 }
@@ -21,7 +21,7 @@ function connectToGame(owner, player, path) {
         console.log(activePlayer + " joined " + gameOwner);
     };
 
-    gameSocket.onmessage = handleGameStateChange;
+    gameSocket.onmessage = handleGameChange;
 
     gameSocket.onclose = function() {
         alert(activePlayer + " disconnected from " + gameOwner);
