@@ -5,6 +5,8 @@
         <meta charset="UTF-8">
         <title>Dominion Play</title>
         <link rel="stylesheet" href="@routes.Assets.at("stylesheets/main.css")">
+        <script src="@routes.Assets.at("javascripts/jquery-1.9.0.min.js")"></script>
+        <script src="@routes.Assets.at("javascripts/dominionCards.js")"></script>
         <script src="@routes.Assets.at("javascripts/game.js")"></script>
         <script type="text/javascript">connectToGame("@game.owner", "@activePlayer", "@routes.GameSocket.socket()");</script>
     </head>

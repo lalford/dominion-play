@@ -1,14 +1,12 @@
 package models.games
 
 import models.cards._
-import models.players.Player
 
 case class GameBoard(
-  players: List[Player],
   victoryBoard: VictoryBoard,
   treasureBoard: TreasureBoard,
   kingdomBoard: KingdomBoard,
-  trash: Set[Card] = Set()
+  trash: List[Card] = List()
 )
 
 object GameBoard {
@@ -17,9 +15,7 @@ object GameBoard {
     val treasureSet = TreasureBoard(numPlayers)
     val kingdomSet = KingdomBoard()
 
-    val players = List()
-
-    GameBoard(players, victorySet, treasureSet, kingdomSet)
+    GameBoard(victorySet, treasureSet, kingdomSet)
   }
 }
 
