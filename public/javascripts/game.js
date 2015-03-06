@@ -1,6 +1,26 @@
+var game = {};
+var kingdomBoard = {};
+
 function handleGameChange(evt) {
-    var changedGame = evt.data;
-    console.log("game state changes need client implementation: \n" + changedGame);
+    game = evt.data;
+
+    if (jQuery.isEmptyObject(kingdomBoard)) {
+        var chosenSetId = 1;
+        var chosenSetIndex = 0;
+        var chosenCards = recommendedBySet[chosenSetId][chosenSetIndex]["cards"];
+
+        jQuery.map(chosenCards, function(name, i) {
+            var chosenCard = jQuery.grep(cards, function(n) { return n == name; })[0];
+            kingdomBoard[name] = {
+                "cost" : chosenCard["cost"],
+                "quantity" : chosenCard["quantity"]
+            };
+        });
+
+        game["kingdomBoard"] = kingdomBoard;
+    }
+
+    console.log("game state changes need client implementation: \n" + game);
 }
 
 function connectToGame(owner, player, path) {
