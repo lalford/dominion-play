@@ -1,8 +1,10 @@
 @(victoryBoard: models.games.VictoryBoard)
 
 <div class="victory-board">
-    @cardDisplay(victoryBoard.curses)
-    @cardDisplay(victoryBoard.estates)
-    @cardDisplay(victoryBoard.duchies)
-    @cardDisplay(victoryBoard.provinces)
+    <p class="card-display">estate</p>
+    <p class="card-display">duchy</p>
+    <p class="card-display">province</p>
+    @if(victoryBoard.curse.isDefined) {
+        <p class="card-display">curse</p>
+    }
 </div>

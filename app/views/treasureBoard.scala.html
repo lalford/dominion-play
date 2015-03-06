@@ -1,7 +1,10 @@
 @(treasureBoard: models.games.TreasureBoard)
 
 <div class="treasure-board">
-    @cardDisplay(treasureBoard.coppers)
-    @cardDisplay(treasureBoard.silvers)
-    @cardDisplay(treasureBoard.golds)
+    <p class="card-display">copper</p>
+    <p class="card-display">silver</p>
+    <p class="card-display">gold</p>
+    @if(treasureBoard.platinum.isDefined) {
+        <p class="card-display">platinum</p>
+    }
 </div>

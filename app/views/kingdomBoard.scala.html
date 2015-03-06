@@ -1,16 +1,6 @@
-@(kingdomBoard: models.games.KingdomBoard)
-
 <div class="kingdom-board">
-    @defining(kingdomBoard.kingdoms.splitAt(kingdomBoard.kingdoms.length/2)) { rows =>
-        <div class="kingdom-board-row">
-            @for(deck <- rows._1) {
-                @cardDisplay(deck)
-            }
-        </div>
-        <div class="kingdom-board-row">
-            @for(deck <- rows._2) {
-                @cardDisplay(deck)
-            }
-        </div>
-    }
+    <div class="kingdom-board-row">
+    </div>
+    <div class="kingdom-board-row">
+    </div>
 </div>

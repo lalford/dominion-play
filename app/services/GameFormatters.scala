@@ -1,7 +1,7 @@
 package services
 
 import models.cards.Card
-import models.games.{PlayerHandle, Game}
+import models.games.{GameBoard, PlayerHandle, Game}
 import models.players.Player
 import play.api.libs.json._
 import play.api.mvc.WebSocket.FrameFormatter
@@ -39,8 +39,17 @@ object GameFormatters {
         "owner" -> JsString(o.owner),
         "numPlayers" -> JsNumber(o.numPlayers),
         "state" -> JsString(o.state.toString),
-        "gameBoard" -> JsString("TODO"),
+        "gameBoard" -> gameBoardJson(o.gameBoard),
         "players" -> playerHandlesJson(o.playerHandles)
+      ))
+    }
+
+    private def gameBoardJson(board: GameBoard): JsValue = {
+      JsObject(Seq(
+        "victoryBoard" -> board.victoryBoard.jsValue,
+        "treasureBoard" -> board.treasureBoard.jsValue,
+        "kingdomBoard" -> board.kingdomBoard.jsValue,
+        "trash" -> JsArray(board.trash.map(card => JsString(card.name)))
       ))
     }
 

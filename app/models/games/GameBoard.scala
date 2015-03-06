@@ -1,6 +1,7 @@
 package models.games
 
-import models.cards._
+import models.cards.Card
+import play.api.libs.json.{JsNumber, JsObject, JsValue}
 
 case class GameBoard(
   victoryBoard: VictoryBoard,
@@ -11,76 +12,76 @@ case class GameBoard(
 
 object GameBoard {
   def apply(numPlayers: Int): GameBoard = {
-    val victorySet = VictoryBoard(numPlayers)
-    val treasureSet = TreasureBoard(numPlayers)
-    val kingdomSet = KingdomBoard()
+    val victoryBoard = VictoryBoard(numPlayers)
+    val treasureBoard = TreasureBoard(numPlayers)
+    val kingdomBoard = KingdomBoard()
 
-    GameBoard(victorySet, treasureSet, kingdomSet)
+    GameBoard(victoryBoard, treasureBoard, kingdomBoard)
   }
 }
 
-case class VictoryBoard(
-  curses: List[Curse],
-  estates: List[Estate],
-  duchies: List[Duchy],
-  provinces: List[Province]
-)
+case class VictoryBoard(estate: Deck, duchy: Deck, province: Deck, curse: Option[Deck]) {
+  def jsValue: JsValue = {
+    val required = JsObject(Seq(
+      estate.card -> JsNumber(estate.quantity),
+      duchy.card -> JsNumber(duchy.quantity),
+      province.card -> JsNumber(province.quantity)
+    ))
+
+    curse.map(deck => required + (deck.card -> JsNumber(deck.quantity))).getOrElse(required)
+  }
+}
 
 object VictoryBoard {
   def apply(numPlayers: Int): VictoryBoard = numPlayers match {
-    case 2 => makeBoard(victoryCount = 8, curseCount = 20)
-    case 3 => makeBoard(victoryCount = 12, curseCount = 30)
-    case 4 => makeBoard(victoryCount = 12, curseCount = 30)
-    case 5 => makeBoard(victoryCount = 12, curseCount = 40, extraProvinces = 3)
-    case _ => makeBoard(victoryCount = 12, curseCount = 50, extraProvinces = 6)
+    case 2 => makeBoard(victoryCount = 8, curseCount = Some(20))
+    case 3 => makeBoard(victoryCount = 12, curseCount = Some(30))
+    case 4 => makeBoard(victoryCount = 12, curseCount = Some(30))
+    case 5 => makeBoard(victoryCount = 12, curseCount = Some(40), extraProvinces = 3)
+    case _ => makeBoard(victoryCount = 12, curseCount = Some(50), extraProvinces = 6)
   }
 
-  private def makeBoard(victoryCount: Int, extraProvinces: Int = 0, curseCount: Int): VictoryBoard = {
-    val countList = (1 to victoryCount).toList
-    val estates = countList.map(_ => Estate())
-    val duchies = countList.map(_ => Duchy())
-    val provinces = countList.map(_ => Province()) ::: (1 to extraProvinces).toList.map(_ => Province())
-    val curses = (1 to curseCount).toList.map(_ => Curse())
-    VictoryBoard(curses, estates, duchies, provinces)
+  private def makeBoard(victoryCount: Int, extraProvinces: Int = 0, curseCount: Option[Int] = None): VictoryBoard = {
+    val estate = Deck("Estate", victoryCount)
+    val duchy = Deck("Duchy", victoryCount)
+    val province = Deck("Province", victoryCount + extraProvinces)
+    val curse = curseCount.map(Deck("Curse", _))
+    VictoryBoard(estate, duchy, province, curse)
   }
 }
 
-case class TreasureBoard(
-  coppers: List[Copper],
-  silvers: List[Silver],
-  golds: List[Gold]
-)
+case class TreasureBoard(copper: Deck, silver: Deck, gold: Deck, platinum: Option[Deck]) {
+  def jsValue: JsValue = {
+    val required = JsObject(Seq(
+      copper.card -> JsNumber(copper.quantity),
+      silver.card -> JsNumber(silver.quantity),
+      gold.card -> JsNumber(gold.quantity)
+    ))
+
+    platinum.map(deck => required + (deck.card -> JsNumber(deck.quantity))).getOrElse(required)
+  }
+}
 
 object TreasureBoard {
   def apply(numPlayers: Int): TreasureBoard = numPlayers match {
-    case 2 => makeBoard(copperCount = 60, silverCount = 40, goldCount = 30)
-    case 3 => makeBoard(copperCount = 60, silverCount = 40, goldCount = 30)
-    case 4 => makeBoard(copperCount = 60, silverCount = 40, goldCount = 30)
-    case 5 => makeBoard(copperCount = 120, silverCount = 80, goldCount = 60)
-    case _ => makeBoard(copperCount = 120, silverCount = 80, goldCount = 60)
+    case 2 => makeBoard(copperCount = 60, silverCount = 40, goldCount = 30, platinumCount = Some(12))
+    case 3 => makeBoard(copperCount = 60, silverCount = 40, goldCount = 30, platinumCount = Some(12))
+    case 4 => makeBoard(copperCount = 60, silverCount = 40, goldCount = 30, platinumCount = Some(12))
+    case 5 => makeBoard(copperCount = 120, silverCount = 80, goldCount = 60, platinumCount = Some(12))
+    case _ => makeBoard(copperCount = 120, silverCount = 80, goldCount = 60, platinumCount = Some(12))
   }
 
-  private def makeBoard(copperCount: Int, silverCount: Int, goldCount: Int): TreasureBoard = {
-    val coppers = (1 to copperCount).toList.map(_ => Copper())
-    val silvers = (1 to silverCount).toList.map(_ => Silver())
-    val golds = (1 to goldCount).toList.map(_ => Gold())
-    TreasureBoard(coppers, silvers, golds)
-  }
-}
-
-case class KingdomBoard(kingdoms: List[List[Card]])
-
-object KingdomBoard {
-  def apply(): KingdomBoard = {
-    val kingdoms = (1 to 10).toList map { i =>
-      val name = s"Ex $i"
-      val cost = i
-      val traits: Set[CardTrait] = {
-        if (i % 3 == 0) Set(Action(List()), Duration(List()))
-        else Set(Action(List()))
-      }
-      (1 to 10).toList.map(_ => Kingdom(name, cost, traits))
-    }
-    KingdomBoard(kingdoms)
+  private def makeBoard(copperCount: Int, silverCount: Int, goldCount: Int, platinumCount: Option[Int] = None): TreasureBoard = {
+    val copper = Deck("Copper", copperCount)
+    val silver = Deck("Silver", silverCount)
+    val gold = Deck("Gold", goldCount)
+    val platinum = platinumCount.map(Deck("Platinum", _))
+    TreasureBoard(copper, silver, gold, platinum)
   }
 }
+
+case class KingdomBoard(kingdoms: List[Deck] = Nil) {
+  def jsValue: JsValue = JsObject(kingdoms.map(deck => deck.card -> JsNumber(deck.quantity)))
+}
+
+case class Deck(card: String, quantity: Int)

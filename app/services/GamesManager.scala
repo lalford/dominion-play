@@ -1,7 +1,7 @@
 package services
 
 import akka.actor.ActorRef
-import models.cards.{Estate, Copper}
+import models.cards.{Victory, Treasure, Card}
 import models.games.{Playing, PlayerHandle, WaitingForPlayers, Game}
 import models.players.Player
 
@@ -55,8 +55,8 @@ object PlayersManager {
 
   def withStartingHand(name: String): Player = {
     val player = get(name).getOrElse(throw new IllegalStateException(s"player: $name not found"))
-    val coppers = (1 to 7 inclusive).map(_ => Copper())
-    val estates = (1 to 3 inclusive).map(_ => Estate())
+    val coppers = (1 to 7 inclusive).map(_ => new Card("Copper", 0, Set(Treasure(1))))
+    val estates = (1 to 3 inclusive).map(_ => new Card("Estate", 2, Set(Victory(1))))
     val (hand, deck) = Random.shuffle(coppers ++ estates).splitAt(5)
 
     update(name, player.copy(isConnected = true))
