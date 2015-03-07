@@ -4,6 +4,9 @@
     <p class="card-display">estate</p>
     <p class="card-display">duchy</p>
     <p class="card-display">province</p>
+    @if(victoryBoard.colony.isDefined) {
+        <p class="card-display">colony</p>
+    }
     @if(victoryBoard.curse.isDefined) {
         <p class="card-display">curse</p>
     }

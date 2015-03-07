@@ -20,7 +20,7 @@ object GameBoard {
   }
 }
 
-case class VictoryBoard(estate: Deck, duchy: Deck, province: Deck, curse: Option[Deck]) {
+case class VictoryBoard(estate: Deck, duchy: Deck, province: Deck, colony: Option[Deck], curse: Option[Deck]) {
   def jsValue: JsValue = {
     val required = JsObject(Seq(
       estate.entry,
@@ -28,25 +28,28 @@ case class VictoryBoard(estate: Deck, duchy: Deck, province: Deck, curse: Option
       province.entry
     ))
 
-    curse.map(deck => required + deck.entry).getOrElse(required)
+    val withColony = colony.map(deck => required + deck.entry).getOrElse(required)
+
+    curse.map(deck => withColony + deck.entry).getOrElse(withColony)
   }
 }
 
 object VictoryBoard {
   def apply(numPlayers: Int): VictoryBoard = numPlayers match {
-    case 2 => makeBoard(victoryCount = 8, curseCount = Some(20))
-    case 3 => makeBoard(victoryCount = 12, curseCount = Some(30))
-    case 4 => makeBoard(victoryCount = 12, curseCount = Some(30))
-    case 5 => makeBoard(victoryCount = 12, curseCount = Some(40), extraProvinces = 3)
-    case _ => makeBoard(victoryCount = 12, curseCount = Some(50), extraProvinces = 6)
+    case 2 => makeBoard(victoryCount = 8, colonyCount = Some(8), curseCount = Some(20))
+    case 3 => makeBoard(victoryCount = 12, colonyCount = Some(12), curseCount = Some(30))
+    case 4 => makeBoard(victoryCount = 12, colonyCount = Some(12), curseCount = Some(30))
+    case 5 => makeBoard(victoryCount = 12, colonyCount = Some(12), curseCount = Some(40), extraProvinces = 3)
+    case _ => makeBoard(victoryCount = 12, colonyCount = Some(12), curseCount = Some(50), extraProvinces = 6)
   }
 
-  private def makeBoard(victoryCount: Int, extraProvinces: Int = 0, curseCount: Option[Int] = None): VictoryBoard = {
+  private def makeBoard(victoryCount: Int, extraProvinces: Int = 0, colonyCount: Option[Int] = None, curseCount: Option[Int] = None): VictoryBoard = {
     val estate = Deck("Estate", 2, victoryCount)
     val duchy = Deck("Duchy", 5, victoryCount)
     val province = Deck("Province", 8, victoryCount + extraProvinces)
+    val colony = colonyCount.map(Deck("Colony", 11, _))
     val curse = curseCount.map(Deck("Curse", 0, _))
-    VictoryBoard(estate, duchy, province, curse)
+    VictoryBoard(estate, duchy, province, colony, curse)
   }
 }
 

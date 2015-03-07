@@ -21,7 +21,7 @@ object GamesManager {
       case None => throw new IllegalStateException(s"owner: $owner game not found")
       case Some(game) =>
         game.synchronized {
-          // TODO - handle rejoining after disconnect
+          // TODO - fix edge case where reconnecting player gets duplicated starting hand
           if (game.playerHandles.size < game.numPlayers) {
             val playerHandle = PlayerHandle(
               gameSocket = playerSocket,

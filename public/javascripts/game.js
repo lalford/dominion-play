@@ -2,25 +2,33 @@ var game = {};
 var kingdomBoard = {};
 
 function handleGameChange(evt) {
-    game = evt.data;
+    game = $.parseJSON(evt.data);
 
-    if (jQuery.isEmptyObject(kingdomBoard)) {
+    if ($.isEmptyObject(kingdomBoard)) {
         var chosenSetId = 1;
         var chosenSetIndex = 0;
         var chosenCards = recommendedBySet[chosenSetId][chosenSetIndex]["cards"];
 
-        jQuery.map(chosenCards, function(name, i) {
-            var chosenCard = jQuery.grep(cards, function(n) { return n == name; })[0];
+        $.map(chosenCards, function(name, i) {
+            var chosenCard = $.grep(cards, function(card) { return card["name"] == name; })[0];
+            var quantity = 0;
+
+            if (typeof chosenCard["isVictory"] === "undefined") {
+                quantity = 10;
+            } else {
+                quantity = 12;
+            }
+
             kingdomBoard[name] = {
                 "cost" : chosenCard["cost"],
-                "quantity" : chosenCard["quantity"]
+                "quantity" : quantity
             };
         });
 
-        game["kingdomBoard"] = kingdomBoard;
+        game["gameBoard"]["kingdomBoard"] = kingdomBoard;
     }
 
-    console.log("game state changes need client implementation: \n" + game);
+    console.log("new game state: \n" + game);
 }
 
 function connectToGame(owner, player, path) {
