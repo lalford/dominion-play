@@ -1,7 +1,7 @@
 package models.games
 
 import models.cards.Card
-import play.api.libs.json.{JsNumber, JsObject, JsValue}
+import play.api.libs.json.{JsString, JsNumber, JsObject, JsValue}
 
 case class GameBoard(
   victoryBoard: VictoryBoard,
@@ -89,6 +89,7 @@ case class KingdomBoard(kingdoms: List[Deck] = Nil) {
 
 case class Deck(card: String, cost: Int, quantity: Int) {
   def entry: (String, JsValue) = card -> JsObject(Seq(
+    "card" -> JsString(card),
     "cost" -> JsNumber(cost),
     "quantity" -> JsNumber(quantity)
   ))

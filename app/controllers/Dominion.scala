@@ -39,10 +39,8 @@ object Dominion extends Controller with DominionHelpers {
             playerHandles = TrieMap.empty[String, PlayerHandle]
           )
 
-          GamesManager.putIfAbsent(game.owner, game) match {
-            case Some(existingGame) => Ok(views.html.dominionBoard(existingGame, activePlayer))
-            case None => Ok(views.html.dominionBoard(game, activePlayer))
-          }
+          GamesManager.putIfAbsent(game.owner, game)
+          Redirect(routes.Dominion.joinGame(game.owner))
         }
       )
     }

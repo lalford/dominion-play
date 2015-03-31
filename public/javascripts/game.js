@@ -1,8 +1,10 @@
-var game = {};
-var kingdomBoard = {};
+var gameOwner = null;
+var activePlayer = null;
+var gameSocket = null;
 
 function handleGameChange(evt) {
-    game = $.parseJSON(evt.data);
+    var game = $.parseJSON(evt.data);
+    var kingdomBoard = game["gameBoard"]["kingdomBoard"];
 
     if ($.isEmptyObject(kingdomBoard)) {
         var chosenSetId = 1;
@@ -19,33 +21,42 @@ function handleGameChange(evt) {
                 quantity = 12;
             }
 
-            kingdomBoard[name] = {
+            kingdomBoard = [];
+            kingdomBoard.push({
+                "card" : name,
                 "cost" : chosenCard["cost"],
                 "quantity" : quantity
-            };
+            });
         });
 
-        game["gameBoard"]["kingdomBoard"] = kingdomBoard;
-    }
+        var newKingdomBoardEvent = {
+            "eventType": "New Kingdom Board",
+            "gameOwner": gameOwner,
+            "player": activePlayer,
+            "kingdomBoard": kingdomBoard
+        };
 
-    console.log("new game state: \n" + game);
+        gameSocket.send(JSON.stringify(newKingdomBoardEvent));
+    } else {
+        console.log("got a full game, draw the shit!\n" + JSON.stringify(game));
+    }
 }
 
 function connectToGame(owner, player, path) {
     var loc = window.location;
     var host = loc.host;
 
-    var gameOwner = owner;
-    var activePlayer = player;
-    var gameSocket = new WebSocket("ws://" + host + path);
+    gameOwner = owner;
+    activePlayer = player;
+    gameSocket = new WebSocket("ws://" + host + path);
 
     gameSocket.onopen = function() {
-        var connectedEvent = {
-            "eventType": "Connected",
+        var connectEvent = {
+            "eventType": "Connect",
             "gameOwner": gameOwner,
             "player": activePlayer
-        }
-        gameSocket.send(JSON.stringify(connectedEvent));
+        };
+        gameSocket.send(JSON.stringify(connectEvent));
         console.log(activePlayer + " joined " + gameOwner);
     };
 
