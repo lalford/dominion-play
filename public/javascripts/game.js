@@ -2,6 +2,66 @@ var gameOwner = null;
 var activePlayer = null;
 var gameSocket = null;
 
+function cardDisplay(card) {
+    var format = card["card"] + " $" + card["cost"] + " (" + card["quantity"] + ")";
+    return $('<p>', {
+        class: "card-display",
+        text: format
+    });
+}
+
+function drawGame(game) {
+    console.log("game json to draw:");
+    console.log(JSON.stringify(game));
+
+    $(".status-board").html("Status: " + game["state"]);
+
+    var victoryBoard = game["gameBoard"]["victoryBoard"];
+    var victoryBoardElem = $(".victory-board");
+
+    victoryBoardElem.empty();
+    $.each(victoryBoard, function(cardName, card) {
+        victoryBoardElem.append(cardDisplay(card));
+    });
+
+    var treasureBoard = game["gameBoard"]["treasureBoard"];
+    var treasureBoardElem = $(".treasure-board");
+
+    treasureBoardElem.empty();
+    $.each(treasureBoard, function(cardName, card) {
+        treasureBoardElem.append(cardDisplay(card));
+    });
+
+    var kingdomBoard = game["gameBoard"]["kingdomBoard"];
+    var kingdomBoardRow1Elem = $("<div>", {
+        class: "kingdom-board-row"
+    });
+    var kingdomBoardRow2Elem = $("<div>", {
+        class: "kingdom-board-row"
+    });
+
+    var numKingdoms = 0;
+    $.each(kingdomBoard, function(cardName, card) {
+        numKingdoms++;
+    });
+
+    var count = 0;
+    $.each(kingdomBoard, function(cardName, card) {
+        if (count < numKingdoms / 2) {
+            kingdomBoardRow1Elem.append(cardDisplay(card));
+        } else {
+            kingdomBoardRow2Elem.append(cardDisplay(card));
+        }
+
+        count++;
+    });
+
+    var kingdomBoardElem = $(".kingdom-board");
+    kingdomBoardElem.empty();
+    kingdomBoardElem.append(kingdomBoardRow1Elem);
+    kingdomBoardElem.append(kingdomBoardRow2Elem);
+}
+
 function handleGameChange(evt) {
     var game = $.parseJSON(evt.data);
     var kingdomBoard = game["gameBoard"]["kingdomBoard"];
@@ -38,7 +98,7 @@ function handleGameChange(evt) {
 
         gameSocket.send(JSON.stringify(newKingdomBoardEvent));
     } else {
-        console.log("got a full game, draw the shit!\n" + JSON.stringify(game));
+        drawGame(game);
     }
 }
 
