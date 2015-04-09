@@ -62,14 +62,30 @@ function drawGame(game) {
     kingdomBoardElem.append(kingdomBoardRow2Elem);
 }
 
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 function handleGameChange(evt) {
     var game = $.parseJSON(evt.data);
     var kingdomBoard = game["gameBoard"]["kingdomBoard"];
 
     if ($.isEmptyObject(kingdomBoard)) {
-        var chosenSetId = 1;
-        var chosenSetIndex = 0;
-        var chosenCards = recommendedBySet[chosenSetId][chosenSetIndex]["cards"];
+        var chosenSetId = getRandomInt(1,10);
+        var chosenSetGames = recommendedBySet[chosenSetId];
+        var chosenSetIndex = getRandomInt(0, chosenSetGames.length - 1);
+        var chosenCards = [];
+
+        if ($.isEmptyObject(chosenSetGames)) {
+            chosenCards = recommendedBySet[1][0]["cards"];
+        } else {
+            var chosenGame = chosenSetGames[chosenSetIndex];
+            if ($.isEmptyObject(chosenGame)) {
+                chosenCards = recommendedBySet[1][0]["cards"];
+            } else {
+                chosenCards = chosenGame["cards"];
+            }
+        }
 
         kingdomBoard = [];
         $.map(chosenCards, function(name, i) {
