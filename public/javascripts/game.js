@@ -71,6 +71,7 @@ function handleGameChange(evt) {
         var chosenSetIndex = 0;
         var chosenCards = recommendedBySet[chosenSetId][chosenSetIndex]["cards"];
 
+        kingdomBoard = [];
         $.map(chosenCards, function(name, i) {
             var chosenCard = $.grep(cards, function(card) { return card["name"] == name; })[0];
             var quantity = 0;
@@ -81,7 +82,6 @@ function handleGameChange(evt) {
                 quantity = 12;
             }
 
-            kingdomBoard = [];
             kingdomBoard.push({
                 "card" : name,
                 "cost" : chosenCard["cost"],
