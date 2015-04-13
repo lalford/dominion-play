@@ -26,6 +26,8 @@ object GameSocketActor {
 }
 
 class GameSocketActor(out: ActorRef) extends Actor {
+  var gameConnectionInfo: Option[GameConnectionInfo] = None
+
   def receive = {
     case json: JsValue =>
       val eventType = (json \ "eventType").as[String]
@@ -34,6 +36,15 @@ class GameSocketActor(out: ActorRef) extends Actor {
         .reads(json)
         .fold(handleBadEvent, handleGameEvent(eventType, _))
     case _ =>
+  }
+
+  @throws[Exception](classOf[Exception])
+  override def postStop(): Unit = {
+    gameConnectionInfo.foreach { gci =>
+      Logger.info(s"${gci.player} lost connection")
+      GamesManager.disconnectPlayer(gci.owner, gci.player)
+      GamesManager.gameBroadcast(gci.owner)
+    }
   }
 
   private def gameEventFormat[A <: GameEvent](handler: GameEventHandler[A]) = {
@@ -54,6 +65,7 @@ class GameSocketActor(out: ActorRef) extends Actor {
   private def handleGameEvent(eventType: String, event: GameEvent): Unit = {
     event match {
       case c: Connect =>
+        gameConnectionInfo = Option(GameConnectionInfo(c.gameOwner, c.player))
         GamesManager.addPlayerHandle(c.gameOwner, c.player, out)
       case kb: NewKingdomBoard =>
         GamesManager.addNewKingdomBoard(kb.gameOwner, kb.kingdomBoard)
@@ -65,3 +77,5 @@ class GameSocketActor(out: ActorRef) extends Actor {
     GamesManager.gameBroadcast(event.gameOwner)
   }
 }
+
+case class GameConnectionInfo(owner: String, player: String)

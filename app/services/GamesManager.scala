@@ -21,22 +21,33 @@ object GamesManager {
     synchronizedGameWork(owner) { game =>
       game.playerHandles.get(player) match {
         case Some(playerHandle) =>
-          val newPlayerHandle = playerHandle.copy(gameSocket = playerSocket)
+          val newPlayerHandle = playerHandle.copy(gameSocket = Option(playerSocket))
           game.playerHandles.update(player, newPlayerHandle)
+          updateGameStateForNewPlayer(game)
         case None =>
           if (game.playerHandles.size < game.numPlayers) {
             val playerHandle = PlayerHandle(
-              gameSocket = playerSocket,
+              gameSocket = Option(playerSocket),
               seat = game.playerHandles.size,
               player = PlayersManager.withStartingHand(player)
             )
             game.playerHandles.put(player, playerHandle)
-
-            if (game.playerHandles.size == game.numPlayers)
-              games.replace(owner, game.copy(state = Playing))
+            updateGameStateForNewPlayer(game)
           } else
             throw new IllegalStateException(s"sorry, someone clicked faster than $player")
       }
+    }
+  }
+
+  private def updateGameStateForNewPlayer(game: Game): Unit = {
+    if (game.playerHandles.size == game.numPlayers) {
+      val disconnectedPlayers = game.playerHandles.values.filter(_.gameSocket.isEmpty)
+      if (disconnectedPlayers.isEmpty)
+        games.replace(game.owner, game.copy(state = Playing))
+      else
+        games.replace(game.owner, game.copy(state = Paused))
+    } else {
+      // still waiting
     }
   }
 
@@ -48,9 +59,16 @@ object GamesManager {
     }
   }
 
+  def disconnectPlayer(owner: String, player: String): Unit = {
+    synchronizedGameWork(owner) { game =>
+      val playerHandle = game.playerHandles.get(player)
+      playerHandle.foreach(handle => game.playerHandles.update(player, handle.copy(gameSocket = None)))
+    }
+  }
+
   def gameBroadcast(owner: String): Unit = {
     synchronizedGameWork(owner) { game =>
-      game.playerHandles.foreach { case (_, handle) => handle.gameSocket ! game }
+      game.playerHandles.foreach { case (_, handle) => handle.gameSocket.foreach(_ ! game) }
     }
   }
 

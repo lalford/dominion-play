@@ -8,9 +8,10 @@ import scala.collection.concurrent.TrieMap
 sealed trait GameState
 case object WaitingForPlayers extends GameState
 case object Playing extends GameState
+case object Paused extends GameState
 
 case class PlayerHandle(
-  gameSocket: ActorRef,
+  gameSocket: Option[ActorRef],
   seat: Int,
   player: Player
 )
