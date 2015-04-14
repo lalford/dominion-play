@@ -10,13 +10,53 @@ function cardDisplay(card) {
     });
 }
 
+function allPlayersDisplay(players) {
+    var playersTable = $('<table>');
+    var headerRow = $('<tr>');
+    var playerHeader = $('<th>', { text: "Player" });
+    var handHeader = $('<th>', { text: "Hand" });
+    var deckHeader = $('<th>', { text: "Deck" });
+    var discardHeader = $('<th>', { text: "Discard" });
+
+    headerRow.append(playerHeader);
+    headerRow.append(handHeader);
+    headerRow.append(deckHeader);
+    headerRow.append(discardHeader);
+
+    playersTable.append(headerRow);
+
+    $.each(players, function (_, player) {
+        var playerRow = $('<tr>');
+        var name = $('<td>', { text: player["name"] });
+        var handCount = $('<td>', { text: player["hand"].length });
+        var deckCount = $('<td>', { text: player["deck"].length });
+        var discardCount = $('<td>', { text: player["discard"].length });
+
+        playerRow.append(name);
+        playerRow.append(handCount);
+        playerRow.append(deckCount);
+        playerRow.append(discardCount);
+
+        playersTable.append(playerRow);
+    });
+
+    return playersTable;
+}
+
 function drawGame(game) {
     console.log("game json to draw:");
     console.log(JSON.stringify(game));
 
-    $(".status-board").html("Status: " + game["state"]);
-
+    var state = game["state"];
     var victoryBoard = game["gameBoard"]["victoryBoard"];
+    var treasureBoard = game["gameBoard"]["treasureBoard"];
+    var kingdomBoard = game["gameBoard"]["kingdomBoard"];
+    var players = game["players"].sort(function (a, b) {
+        return ((a["seat"] < b["seat"]) ? -1 : ((a["seat"] > b["seat"]) ? 1 : 0));
+    });
+
+    $(".status-board").html("Status: " + state);
+
     var victoryBoardElem = $(".victory-board");
 
     victoryBoardElem.empty();
@@ -24,7 +64,6 @@ function drawGame(game) {
         victoryBoardElem.append(cardDisplay(card));
     });
 
-    var treasureBoard = game["gameBoard"]["treasureBoard"];
     var treasureBoardElem = $(".treasure-board");
 
     treasureBoardElem.empty();
@@ -32,7 +71,6 @@ function drawGame(game) {
         treasureBoardElem.append(cardDisplay(card));
     });
 
-    var kingdomBoard = game["gameBoard"]["kingdomBoard"];
     var kingdomBoardRow1Elem = $("<div>", {
         class: "kingdom-board-row"
     });
@@ -60,6 +98,11 @@ function drawGame(game) {
     kingdomBoardElem.empty();
     kingdomBoardElem.append(kingdomBoardRow1Elem);
     kingdomBoardElem.append(kingdomBoardRow2Elem);
+
+    var allPlayersBoard = $(".all-players-board");
+    allPlayersBoard.empty();
+    allPlayersBoard.append(allPlayersDisplay(players));
+
 }
 
 function getRandomInt(min, max) {
