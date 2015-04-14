@@ -1,8 +1,27 @@
-@(newGameLink: String, openGames: Iterable[OpenGame])
+@(newGameLink: String, rejoinGames: Iterable[GameMenuItem], openGames: Iterable[GameMenuItem])
 
 <html>
     <body>
         <b><a href="@newGameLink">Start New Game</a></b>
+        @if(rejoinGames.nonEmpty) {
+            <h2>Rejoin Games</h2>
+            <table>
+                <tr>
+                    <th>Owner</th>
+                    <th>Required</th>
+                    <th>Joined</th>
+                    <th>Players</th>
+                </tr>
+                @for(game <- rejoinGames) {
+                    <tr>
+                        <td><a href="@game.joinGameLinkGen(game.owner)">@game.owner</a></td>
+                        <td>@game.numPlayers</td>
+                        <td>@game.joinedPlayers.size</td>
+                        <td>@game.joinedPlayers.map(_.name).mkString(", ")</td>
+                    </tr>
+                }
+            </table>
+        }
         <h2>Games Waiting For Players</h2>
         <table>
             <tr>
@@ -16,7 +35,7 @@
                 <td><a href="@game.joinGameLinkGen(game.owner)">@game.owner</a></td>
                 <td>@game.numPlayers</td>
                 <td>@game.joinedPlayers.size</td>
-                <td>@game.joinedPlayers.map(_.name).mkString</td>
+                <td>@game.joinedPlayers.map(_.name).mkString(", ")</td>
             </tr>
             }
         </table>

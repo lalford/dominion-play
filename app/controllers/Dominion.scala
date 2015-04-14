@@ -12,12 +12,17 @@ import scala.concurrent.Future
 
 object Dominion extends Controller with DominionHelpers {
   def menu = registeredAction {
-    Action {
+    def menuItem(game: Game) = GameMenuItem(game.owner, game.numPlayers, game.playerHandles.mapValues(_.player).values.toList, joinGameLinkGen)
+    Action { implicit request =>
+      sessionPlayerName
       val newGameLink = routes.Dominion.newGame().url
-      val openGames = GamesManager.openGames
-        .map { case (_, game) => OpenGame(game.owner, game.numPlayers, game.playerHandles.mapValues(_.player).values.toList, joinGameLinkGen) }
+      val rejoinGames = sessionPlayerName.map(GamesManager.rejoinGames).getOrElse(TrieMap.empty)
+        .map { case (_, game) => menuItem(game) }
         .seq
-      Ok(views.html.menu(newGameLink, openGames))
+      val openGames = GamesManager.openGames
+        .map { case (_, game) => menuItem(game) }
+        .seq
+      Ok(views.html.menu(newGameLink, rejoinGames, openGames))
     }
   }
 
@@ -103,5 +108,5 @@ trait DominionHelpers {
 }
 
 case class NewGame(numPlayers: Int)
-case class OpenGame(owner: String, numPlayers: Int, joinedPlayers: List[Player], joinGameLinkGen: String => String)
+case class GameMenuItem(owner: String, numPlayers: Int, joinedPlayers: List[Player], joinGameLinkGen: String => String)
 case class RegisterPlayer(name: String)
