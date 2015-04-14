@@ -41,6 +41,10 @@ object GamesManager {
     }
   }
 
+  def dropPlayerHandle(owner: String, player: String): Unit = {
+    synchronizedGameWork(owner) { game => game.playerHandles.remove(player) }
+  }
+
   def addNewKingdomBoard(owner: String, kingdomBoard: KingdomBoard): Unit = {
     synchronizedGameWork(owner) { game =>
       val newGameBoard = game.gameBoard.copy(kingdomBoard = kingdomBoard)
@@ -75,8 +79,10 @@ object GamesManager {
 
   private def setGameState(game: Game): Unit = {
     val newState = {
-      if (game.playerHandles.size < game.numPlayers)
+      if (game.playerHandles.size < game.numPlayers && game.state == WaitingForPlayers)
         WaitingForPlayers
+      else if (game.playerHandles.size < game.numPlayers)
+        GameFailed
       else if (game.playerHandles.size == game.numPlayers) {
         val disconnectedPlayers = game.playerHandles.values.filter(_.gameSocket.isEmpty)
         if (disconnectedPlayers.isEmpty)

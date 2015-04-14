@@ -1,4 +1,4 @@
-@(game: models.games.Game, activePlayer: String)
+@(game: models.games.Game, activePlayer: String, leaveGameLink: String)
 
 <html>
     <head>
@@ -14,6 +14,8 @@
         <div class="status-board">
             Status: @game.state
         </div>
+        <br/>
+        <a href="@leaveGameLink">Leave Game</a>
         <br/>
         <div class="game-board">
             @victoryBoard(game.gameBoard.victoryBoard)

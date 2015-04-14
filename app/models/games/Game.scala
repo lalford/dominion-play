@@ -9,6 +9,7 @@ sealed trait GameState
 case object WaitingForPlayers extends GameState
 case object Playing extends GameState
 case object Paused extends GameState
+case object GameFailed extends GameState
 
 case class PlayerHandle(
   gameSocket: Option[ActorRef],
