@@ -24,7 +24,8 @@ object GameFormatters {
         "name" -> JsString(o.name),
         "hand" -> cardsJson(o.hand),
         "deck" -> cardsJson(o.deck),
-        "discard" -> cardsJson(o.discard)
+        "discard" -> cardsJson(o.discard),
+        "total" -> JsNumber(o.total)
       ))
     }
 

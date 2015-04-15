@@ -17,11 +17,13 @@ function allPlayersDisplay(players) {
     var handHeader = $('<th>', { text: "Hand" });
     var deckHeader = $('<th>', { text: "Deck" });
     var discardHeader = $('<th>', { text: "Discard" });
+    var totalHeader = $('<th>', { text: "Total" });
 
     headerRow.append(playerHeader);
     headerRow.append(handHeader);
     headerRow.append(deckHeader);
     headerRow.append(discardHeader);
+    headerRow.append(totalHeader);
 
     playersTable.append(headerRow);
 
@@ -31,11 +33,13 @@ function allPlayersDisplay(players) {
         var handCount = $('<td>', { text: player["hand"].length });
         var deckCount = $('<td>', { text: player["deck"].length });
         var discardCount = $('<td>', { text: player["discard"].length });
+        var totalCount = $('<td>', { text: player["total"] });
 
         playerRow.append(name);
         playerRow.append(handCount);
         playerRow.append(deckCount);
         playerRow.append(discardCount);
+        playerRow.append(totalCount);
 
         playersTable.append(playerRow);
     });

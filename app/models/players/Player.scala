@@ -10,4 +10,6 @@ case class Player(
   hand: MutableList[Card] = MutableList(),
   deck: MutableList[Card] = MutableList(),
   discard: MutableList[Card] = MutableList()
-)
+) {
+  def total: Int = hand.length + deck.length + discard.length
+}
