@@ -8,14 +8,15 @@
         <script src="@routes.Assets.at("javascripts/jquery-1.9.0.min.js")"></script>
         <script src="@routes.Assets.at("javascripts/dominionCards.js")"></script>
         <script src="@routes.Assets.at("javascripts/game.js")"></script>
-        <script type="text/javascript">connectToGame("@game.owner", "@activePlayer", "@routes.GameSocket.socket()");</script>
+        <script type="text/javascript">connectToGame("@game.owner", "@activePlayer", "@routes.GameSocket.socket()", "@routes.Dominion.menu()");</script>
     </head>
     <body>
         <div class="status-board">
             Status: @game.state
         </div>
         <br/>
-        <a href="@leaveGameLink">Leave Game</a>
+        <div class="leave-game">
+        </div>
         <br/>
         <div class="game-board">
             @victoryBoard(game.gameBoard.victoryBoard)

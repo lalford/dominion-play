@@ -13,7 +13,7 @@ object GamesManager {
 
   def get(owner: String): Option[Game] = games.get(owner)
 
-  def putIfAbsent(owner: String, game: Game): Option[Game] = games.putIfAbsent(owner, game)
+  def put(owner: String, game: Game): Option[Game] = games.put(owner, game)
 
   def openGames: TrieMap[String, Game] = games.filter { case (_, game) => game.state == WaitingForPlayers }
 
@@ -38,18 +38,22 @@ object GamesManager {
           } else
             throw new IllegalStateException(s"sorry, someone clicked faster than $player")
       }
+      game
     }
   }
 
   def dropPlayerHandle(owner: String, player: String): Unit = {
-    synchronizedGameWork(owner) { game => game.playerHandles.remove(player) }
+    synchronizedGameWork(owner) { game =>
+      game.playerHandles.remove(player)
+      game
+    }
   }
 
   def addNewKingdomBoard(owner: String, kingdomBoard: KingdomBoard): Unit = {
     synchronizedGameWork(owner) { game =>
       val newGameBoard = game.gameBoard.copy(kingdomBoard = kingdomBoard)
       val newGame = game.copy(gameBoard = newGameBoard)
-      games.replace(owner, newGame)
+      newGame
     }
   }
 
@@ -57,43 +61,41 @@ object GamesManager {
     synchronizedGameWork(owner) { game =>
       val playerHandle = game.playerHandles.get(player)
       playerHandle.foreach(handle => game.playerHandles.update(player, handle.copy(gameSocket = None)))
+      game
     }
   }
 
-  def gameBroadcast(owner: String): Unit = {
-    synchronizedGameWork(owner) { game =>
-      game.playerHandles.foreach { case (_, handle) => handle.gameSocket.foreach(_ ! game) }
-    }
-  }
-
-  private def synchronizedGameWork(owner: String)(work: Game => Unit): Unit = {
+  private def synchronizedGameWork(owner: String)(work: Game => Game): Unit = {
     games.get(owner) match {
       case None =>
         throw new IllegalStateException(s"owner: $owner game not found")
       case Some(game) => game.synchronized {
-        work(game)
-        setGameState(game)
+        val workedGame = work(game)
+        val workedState = checkGameState(workedGame)
+        val updatedGame = if (game.state == workedState) workedGame else workedGame.copy(state = workedState)
+        games.replace(owner, updatedGame)
+        gameBroadcast(updatedGame)
       }
     }
   }
 
-  private def setGameState(game: Game): Unit = {
-    val newState = {
-      if (game.playerHandles.size < game.numPlayers && game.state == WaitingForPlayers)
-        WaitingForPlayers
-      else if (game.playerHandles.size < game.numPlayers)
-        GameFailed
-      else if (game.playerHandles.size == game.numPlayers) {
-        val disconnectedPlayers = game.playerHandles.values.filter(_.gameSocket.isEmpty)
-        if (disconnectedPlayers.isEmpty)
-          Playing
-        else
-          Paused
-      } else
-        throw new IllegalStateException(s"game for ${game.owner} got oversubscribed")
-    }
+  private def checkGameState(game: Game): GameState = {
+    if (game.playerHandles.size < game.numPlayers && game.state == WaitingForPlayers)
+      WaitingForPlayers
+    else if (game.playerHandles.size < game.numPlayers)
+      GameFailed
+    else if (game.playerHandles.size == game.numPlayers) {
+      val disconnectedPlayers = game.playerHandles.values.filter(_.gameSocket.isEmpty)
+      if (disconnectedPlayers.isEmpty)
+        Playing
+      else
+        Paused
+    } else
+      throw new IllegalStateException(s"game for ${game.owner} got oversubscribed")
+  }
 
-    games.replace(game.owner, game.copy(state = newState))
+  private def gameBroadcast(game: Game): Unit = {
+    game.playerHandles.foreach { case (_, handle) => handle.gameSocket.foreach(_ ! game) }
   }
 }
 

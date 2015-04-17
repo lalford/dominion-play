@@ -44,7 +44,7 @@ object Dominion extends Controller with DominionHelpers {
             playerHandles = TrieMap.empty[String, PlayerHandle]
           )
 
-          GamesManager.putIfAbsent(game.owner, game)
+          GamesManager.put(game.owner, game)
           Redirect(routes.Dominion.joinGame(game.owner))
         }
       )

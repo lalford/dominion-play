@@ -14,6 +14,7 @@ object GameSocket extends Controller {
   import services.GameFormatters._
 
   GameEventHandlers.register(ConnectHandler)
+  GameEventHandlers.register(LeaveHandler)
   GameEventHandlers.register(NewKingdomBoardHandler)
 
   def socket = WebSocket.acceptWithActor[JsValue, Game] { request => out =>
@@ -43,7 +44,6 @@ class GameSocketActor(out: ActorRef) extends Actor {
     gameConnectionInfo.foreach { gci =>
       Logger.info(s"${gci.player} lost connection")
       GamesManager.disconnectPlayer(gci.owner, gci.player)
-      GamesManager.gameBroadcast(gci.owner)
     }
   }
 
@@ -67,14 +67,15 @@ class GameSocketActor(out: ActorRef) extends Actor {
       case c: Connect =>
         gameConnectionInfo = Option(GameConnectionInfo(c.gameOwner, c.player))
         GamesManager.addPlayerHandle(c.gameOwner, c.player, out)
+      case l: Leave =>
+        gameConnectionInfo = None
+        GamesManager.dropPlayerHandle(l.gameOwner, l.player)
       case kb: NewKingdomBoard =>
         GamesManager.addNewKingdomBoard(kb.gameOwner, kb.kingdomBoard)
       case _ =>
         Logger.error(s"closing socket due to unhandled event type: $eventType")
         self ! PoisonPill
     }
-
-    GamesManager.gameBroadcast(event.gameOwner)
   }
 }
 

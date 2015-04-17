@@ -47,6 +47,16 @@ function allPlayersDisplay(players) {
     return playersTable;
 }
 
+function leaveGame() {
+    var leaveEvent = {
+        "eventType": "Leave",
+        "gameOwner": gameOwner,
+        "player": activePlayer
+    };
+    gameSocket.send(JSON.stringify(leaveEvent));
+    gameSocket.close();
+}
+
 function drawGame(game) {
     console.log("game json to draw:");
     console.log(JSON.stringify(game));
@@ -60,6 +70,13 @@ function drawGame(game) {
     });
 
     $(".status-board").html("Status: " + state);
+
+    var leaveGameButton = $("<button>", {
+       text: "Leave Game",
+       click: leaveGame
+    });
+
+    $(".leave-game").html(leaveGameButton);
 
     var victoryBoardElem = $(".victory-board");
 
@@ -165,7 +182,7 @@ function handleGameChange(evt) {
     }
 }
 
-function connectToGame(owner, player, path) {
+function connectToGame(owner, player, path, menu) {
     var loc = window.location;
     var host = loc.host;
 
@@ -186,6 +203,6 @@ function connectToGame(owner, player, path) {
     gameSocket.onmessage = handleGameChange;
 
     gameSocket.onclose = function() {
-        alert(activePlayer + " disconnected from " + gameOwner);
+        loc.assign(menu);
     };
 }
