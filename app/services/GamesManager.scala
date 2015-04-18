@@ -3,7 +3,7 @@ package services
 import akka.actor.ActorRef
 import models.cards.{Victory, Treasure, Card}
 import models.games._
-import models.players.Player
+import models.players.{PlayerHandle, Player}
 
 import scala.collection.concurrent.TrieMap
 import scala.util.Random
@@ -29,11 +29,13 @@ object GamesManager {
           game.playerHandles.update(player, newPlayerHandle)
         case None =>
           if (game.playerHandles.size < game.numPlayers) {
+            val registeredPlayer = PlayersManager.checkRegistration(player)
             val playerHandle = PlayerHandle(
               gameSocket = Option(playerSocket),
               seat = game.playerHandles.size,
-              player = PlayersManager.withStartingHand(player)
+              player = registeredPlayer
             )
+            PlayersManager.setStartingHand(playerHandle)
             game.playerHandles.put(player, playerHandle)
           } else
             throw new IllegalStateException(s"sorry, someone clicked faster than $player")
@@ -106,15 +108,15 @@ object PlayersManager {
   def putIfAbsent(name: String, player: Player): Option[Player] = registeredPlayers.putIfAbsent(name, player)
   def update(name: String, player: Player): Unit = registeredPlayers.update(name, player)
 
-  def withStartingHand(name: String): Player = {
-    val player = get(name).getOrElse(throw new IllegalStateException(s"player: $name not found"))
+  def checkRegistration(name: String): Player =
+    get(name).getOrElse(throw new IllegalStateException(s"player: $name not found"))
+
+  def setStartingHand(playerHandle: PlayerHandle): Unit = {
     val coppers = (1 to 7 inclusive).map(_ => new Card("Copper", 0, Set(Treasure(1))))
     val estates = (1 to 3 inclusive).map(_ => new Card("Estate", 2, Set(Victory(1))))
     val (hand, deck) = Random.shuffle(coppers ++ estates).splitAt(5)
 
-    update(name, player.copy(isConnected = true))
-    hand.foreach(player.hand += _)
-    deck.foreach(player.deck += _)
-    player
+    hand.foreach(playerHandle.hand += _)
+    deck.foreach(playerHandle.deck += _)
   }
 }

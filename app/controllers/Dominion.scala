@@ -1,7 +1,7 @@
 package controllers
 
-import models.games.{PlayerHandle, WaitingForPlayers, Game, GameBoard}
-import models.players.Player
+import models.games.{WaitingForPlayers, Game, GameBoard}
+import models.players.{PlayerHandle, Player}
 import play.api.data._
 import play.api.data.Forms._
 import play.api.mvc.Action
@@ -77,8 +77,8 @@ object Dominion extends Controller with DominionHelpers {
       formWithErrors => BadRequest(views.html.registerPlayer(formWithErrors)),
       registerPlayer => {
         val name = registerPlayer.name
-        PlayersManager.putIfAbsent(name, Player(name, isConnected = true)) match {
-          case Some(player) if player.isConnected => BadRequest(s"$name is already registered and current connected")
+        PlayersManager.putIfAbsent(name, Player(name)) match {
+          case Some(player) => BadRequest(s"$name is already registered")
           case _ => Redirect(routes.Dominion.menu).withSession(PLAYER_NAME_KEY -> name)
         }
       }
@@ -89,8 +89,8 @@ object Dominion extends Controller with DominionHelpers {
     sessionPlayerName match {
       case Some(playerName) =>
         PlayersManager.get(playerName) match {
-          case Some(player) => PlayersManager.update(playerName, player.copy(isConnected = true))
-          case None => PlayersManager.putIfAbsent(playerName, Player(playerName, isConnected = true))
+          case Some(player) => // nothing to do right now
+          case None => PlayersManager.putIfAbsent(playerName, Player(playerName))
         }
         action(request)
       case None =>

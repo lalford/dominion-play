@@ -1,8 +1,8 @@
 package services
 
 import models.cards.Card
-import models.games.{GameBoard, PlayerHandle, Game}
-import models.players.Player
+import models.games.{GameBoard, Game}
+import models.players.PlayerHandle
 import play.api.libs.json._
 import play.api.mvc.WebSocket.FrameFormatter
 
@@ -14,22 +14,6 @@ object GameFormatters {
     override def reads(json: JsValue): JsResult[Card] = JsError("reads for card object not implemented")
 
     override def writes(o: Card): JsValue = JsString(o.name)
-  }
-
-  implicit object PlayerFormat extends Format[Player] {
-    override def reads(json: JsValue): JsResult[Player] = JsError("reads for player object not implemented")
-
-    override def writes(o: Player): JsValue = {
-      JsObject(Seq(
-        "name" -> JsString(o.name),
-        "hand" -> cardsJson(o.hand),
-        "deck" -> cardsJson(o.deck),
-        "discard" -> cardsJson(o.discard),
-        "total" -> JsNumber(o.total)
-      ))
-    }
-
-    private def cardsJson(cards: mutable.MutableList[Card]): JsValue = JsArray(cards.toSeq.map(Json.toJson(_)))
   }
 
   implicit object GameFormat extends Format[Game] {
@@ -56,9 +40,18 @@ object GameFormatters {
 
     private def playerHandlesJson(playerHandles: TrieMap[String, PlayerHandle]): JsValue = {
       JsArray(playerHandles.toSeq.map { case (name, ph) =>
-        Json.toJson(ph.player).asInstanceOf[JsObject] + ("seat" -> JsNumber(ph.seat))
+        JsObject(Seq(
+          "name" -> JsString(ph.player.name),
+          "seat" -> JsNumber(ph.seat),
+          "hand" -> cardsJson(ph.hand),
+          "deck" -> cardsJson(ph.deck),
+          "discard" -> cardsJson(ph.discard),
+          "total" -> JsNumber(ph.total)
+        ))
       })
     }
+
+    private def cardsJson(cards: mutable.MutableList[Card]): JsValue = JsArray(cards.toSeq.map(Json.toJson(_)))
   }
 
   implicit val gameFrameFormatter = FrameFormatter.jsonFrame[Game]
