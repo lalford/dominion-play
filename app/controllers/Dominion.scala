@@ -54,20 +54,8 @@ object Dominion extends Controller with DominionHelpers {
   def joinGame(owner: String) = registeredAction {
     Action { implicit request =>
       GamesManager.get(owner) match {
-        case Some(game) => Ok(views.html.dominionBoard(game, sessionPlayerName.get, routes.Dominion.leaveGame(owner).url))
+        case Some(game) => Ok(views.html.dominionBoard(game, sessionPlayerName.get))
         case None => Redirect(routes.Dominion.menu())
-      }
-    }
-  }
-
-  def leaveGame(owner: String) = registeredAction {
-    Action { implicit request =>
-      GamesManager.get(owner) match {
-        case Some(game) =>
-          sessionPlayerName.foreach(GamesManager.dropPlayerHandle(owner, _))
-          Redirect(routes.Dominion.menu())
-        case None =>
-          Redirect(routes.Dominion.menu())
       }
     }
   }

@@ -5,7 +5,6 @@ POST        /dominion/new                   controllers.Dominion.createGame
 
 # TODO - sloppy state modification with GET, fix this
 GET         /dominion/join/:owner           controllers.Dominion.joinGame(owner: String)
-GET         /dominion/leave/:owner          controllers.Dominion.leaveGame(owner: String)
 
 GET         /dominion/socket                controllers.GameSocket.socket
 
