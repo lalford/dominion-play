@@ -125,6 +125,32 @@ var playersBoardModule = (function() {
     }
 })();
 
+var playerModule = (function() {
+    var gameConnectionInfo;
+
+    return {
+        init: function(gci) {
+            gameConnectionInfo = gci;
+        },
+        draw: function(players) {
+            var player = {};
+            for (var i = 0; i < players.length; i++) {
+                if (players[i].name === gameConnectionInfo.player) {
+                    player = players[i];
+                    break;
+                }
+            }
+
+            var playerBoard = $(".player-board");
+            playerBoard.empty();
+            playerBoard.append($('<p>', { text: "Your Hand" }));
+            $.each(player["hand"], function(_, cardName) {
+                playerBoard.append($('<p>', { text: cardName }));
+            });
+        }
+    }
+})();
+
 var drawGameModule = (function() {
     var gameConnectionInfo;
 
@@ -150,6 +176,7 @@ var drawGameModule = (function() {
             treasureBoardModule.draw(treasureBoard);
             kingdomBoardModule.draw(kingdomBoard);
             playersBoardModule.draw(players);
+            playerModule.draw(players);
         }
     }
 })();

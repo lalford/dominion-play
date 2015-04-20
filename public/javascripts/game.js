@@ -27,7 +27,8 @@ function connectToGame(owner, player, path, menu) {
         statusModule,
         victoryBoardModule,
         treasureBoardModule,
-        playersBoardModule
+        playersBoardModule,
+        playerModule
     ];
     $.each(gameModules, function(_, gameModule) {
         gameModule.init(gameConnectionInfo);
